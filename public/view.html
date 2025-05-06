@@ -15,7 +15,7 @@
       margin: auto;
       padding: 20px;
     }
-    video, iframe {
+    iframe {
       width: 100%;
       aspect-ratio: 16 / 9;
       background: #000;
@@ -28,6 +28,7 @@
       background-color: #1a237e;
       color: white;
       cursor: pointer;
+      text-decoration: none;
     }
     button:hover, a.button:hover {
       background-color: #283593;
@@ -49,10 +50,7 @@
     <h1 id="anime-title">Loading...</h1>
 
     <div id="video-container">
-      <video id="main-video" controls autoplay>
-        <source id="video-source" src="" type="video/mp4">
-        Your browser does not support HTML5 video.
-      </video>
+      <!-- iframe will be injected here -->
     </div>
 
     <div>
@@ -100,37 +98,33 @@
       return { title, episodes: anime.episodes };
     }
 
+    function setIframe(url) {
+      const container = document.getElementById('video-container');
+      container.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen></iframe>`;
+    }
+
     async function loadAnimeHeaven() {
       const { title } = await getAnimeDetails();
       try {
         const res = await fetch(`http://txtorg-anih.hf.space/video?name=${encodeURIComponent(title)}&episode=${episodeNumber}`);
         const data = await res.json();
-        const video = document.getElementById("main-video");
-        video.src = data.videoUrl;
-        video.load();
-        video.play();
+        setIframe(data.videoUrl);
       } catch (e) {
-        fallbackToIframe(`https://www31.gogoanimes.fi/${title.toLowerCase().replace(/\s/g, '-')}-episode-${episodeNumber}`);
+        alert("Failed to load AnimeHeaven stream.");
       }
     }
 
     async function loadGogoAnime() {
+      const { title } = await getAnimeDetails();
       try {
-        const { title } = await getAnimeDetails();
         const res = await fetch(`https://reikerxx-animedl.hf.space/anime/${encodeURIComponent(title)}/${episodeNumber}`);
         const data = await res.json();
-        const streamUrl = `https://txtorg-anih.hf.space/iframe?url=${data.episodeUrl}`;
-        const iframeRes = await fetch(streamUrl);
+        const iframeRes = await fetch(`https://txtorg-anih.hf.space/iframe?url=${data.episodeUrl}`);
         const iframeData = await iframeRes.json();
-        fallbackToIframe(iframeData.iframeUrl);
+        setIframe(iframeData.iframeUrl);
       } catch (e) {
-        console.error("GogoAnime fallback failed", e);
+        alert("Failed to load GogoAnime stream.");
       }
-    }
-
-    function fallbackToIframe(url) {
-      const container = document.getElementById('video-container');
-      container.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen></iframe>`;
     }
 
     async function downloadFromHeaven() {
@@ -139,8 +133,11 @@
       const data = await res.json();
       const a = document.createElement("a");
       a.href = data.videoUrl;
-      a.download = `Episode-${episodeNumber}.mp4`;
+      a.setAttribute("download", `Episode-${episodeNumber}.mp4`);
+      a.style.display = "none";
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
     }
 
     async function downloadFromTokyo() {
@@ -181,8 +178,8 @@
 
     (async () => {
       const details = await getAnimeDetails();
-      await loadAnimeHeaven();
-      await renderEpisodeList(details.episodes || 100); // fallback cap
+      await loadAnimeHeaven(); // AnimeHeaven as default
+      await renderEpisodeList(details.episodes || 100);
     })();
   </script>
 </body>
