@@ -20,6 +20,10 @@ app.get('/api/popular', async (req, res) => {
   }
 });
 
+app.get('/anime/:id/:episode', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'view.html'));
+});
+
 // 2. Search anime
 app.get('/api/search', async (req, res) => {
   const query = req.query.q;
