@@ -107,6 +107,11 @@
       cursor: pointer;
       transition: background-color 0.3s;
       font-size: 14px;
+      position: relative;
+      min-width: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .btn:hover {
@@ -180,8 +185,13 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100px;
+      height: 100%;
       color: var(--text-secondary);
+      position: absolute;
+      width: 100%;
+      top: 0;
+      left: 0;
+      background-color: rgba(0, 0, 0, 0.8);
     }
     
     .error-message {
@@ -200,6 +210,106 @@
       background-color: var(--primary-dark);
       color: var(--text);
       border: 1px solid var(--accent);
+      margin-right: 10px;
+    }
+    
+    /* Custom play button */
+    .custom-play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 80px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 10;
+      border: none;
+    }
+    
+    .custom-play-btn:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    
+    .custom-play-btn::after {
+      content: '';
+      display: block;
+      width: 0;
+      height: 0;
+      border-top: 20px solid transparent;
+      border-bottom: 20px solid transparent;
+      border-left: 30px solid white;
+      margin-left: 5px;
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 8px;
+    }
+    
+    .btn .spinner {
+      display: none;
+    }
+    
+    .btn.loading .spinner {
+      display: block;
+    }
+    
+    .btn.loading span {
+      display: none;
+    }
+    
+    /* Video loading animation */
+    .video-loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+    }
+    
+    .video-loading-bar {
+      width: 80%;
+      height: 4px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+    
+    .video-loading-progress {
+      height: 100%;
+      width: 0;
+      background-color: var(--accent);
+      animation: loading 2s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    @keyframes loading {
+      0% { width: 0; margin-left: 0; }
+      50% { width: 100%; margin-left: 0; }
+      100% { width: 0; margin-left: 100%; }
     }
     
     @media (max-width: 768px) {
@@ -225,14 +335,27 @@
     </header>
     
     <div class="video-container" id="video-container">
-      <div class="loading">Loading video player...</div>
+      <div class="video-loading">
+        <div class="spinner" style="width: 40px; height: 40px; border-width: 5px;"></div>
+        <div>Loading video player...</div>
+        <div class="video-loading-bar">
+          <div class="video-loading-progress"></div>
+        </div>
+      </div>
+      <button class="custom-play-btn" id="custom-play-btn" style="display: none;"></button>
     </div>
     
     <div class="server-section">
       <h2>Streaming Server</h2>
       <div class="btn-group">
-        <button class="btn active" id="animeheaven-btn" onclick="loadAnimeHeaven()">AnimeHeaven</button>
-        <button class="btn" id="gogoanime-btn" onclick="loadGogoAnime()">GogoAnime</button>
+        <button class="btn active" id="animeheaven-btn" onclick="loadAnimeHeaven()">
+          <div class="spinner"></div>
+          <span>AnimeHeaven</span>
+        </button>
+        <button class="btn" id="gogoanime-btn" onclick="loadGogoAnime()">
+          <div class="spinner"></div>
+          <span>GogoAnime</span>
+        </button>
       </div>
       <div id="server-error" class="error-message"></div>
     </div>
@@ -240,9 +363,18 @@
     <div class="download-section">
       <h2>Download Options</h2>
       <div class="btn-group">
-        <button class="btn" onclick="downloadFromHeaven()">Download from AnimeHeaven</button>
-        <button class="btn" onclick="downloadFromTokyo()">Download from TokyoInsider</button>
-        <button class="btn" onclick="downloadFrom9anime()">Download from 9anime</button>
+        <button class="btn" onclick="downloadFromHeaven()">
+          <div class="spinner"></div>
+          <span>Download from AnimeHeaven</span>
+        </button>
+        <button class="btn" onclick="downloadFromTokyo()">
+          <div class="spinner"></div>
+          <span>Download from TokyoInsider</span>
+        </button>
+        <button class="btn" onclick="downloadFrom9anime()">
+          <div class="spinner"></div>
+          <span>Download from 9anime</span>
+        </button>
       </div>
       <div id="download-error" class="error-message"></div>
       
@@ -250,7 +382,10 @@
         <select id="quality-select">
           <option value="">Select quality</option>
         </select>
-        <button class="btn" onclick="startDownload()">Download</button>
+        <button class="btn" onclick="startDownload()">
+          <div class="spinner"></div>
+          <span>Download</span>
+        </button>
       </div>
     </div>
     
@@ -273,6 +408,7 @@
     let currentEpisode = 1;
     let animeId = '';
     let downloadOptions = {};
+    let currentIframe = null;
     
     // Initialize the page
     document.addEventListener('DOMContentLoaded', async () => {
@@ -332,7 +468,30 @@
     // Set iframe in video container
     function setIframe(url) {
       const container = document.getElementById('video-container');
-      container.innerHTML = `<iframe src="${url}" frameborder="0" allowfullscreen></iframe>`;
+      
+      // Remove existing iframe if any
+      if (currentIframe) {
+        container.removeChild(currentIframe);
+      }
+      
+      // Create new iframe
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.frameBorder = '0';
+      iframe.allowFullscreen = true;
+      iframe.style.position = 'absolute';
+      iframe.style.top = '0';
+      iframe.style.left = '0';
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      
+      // Hide loading elements
+      document.querySelector('.video-loading').style.display = 'none';
+      document.getElementById('custom-play-btn').style.display = 'none';
+      
+      container.appendChild(iframe);
+      currentIframe = iframe;
     }
     
     // Show error message
@@ -342,13 +501,26 @@
       setTimeout(() => element.textContent = '', 5000);
     }
     
+    // Show loading state for a button
+    function setButtonLoading(buttonId, isLoading) {
+      const btn = document.getElementById(buttonId);
+      if (isLoading) {
+        btn.classList.add('loading');
+      } else {
+        btn.classList.remove('loading');
+      }
+    }
+    
     // Load AnimeHeaven stream
     async function loadAnimeHeaven() {
       try {
         currentServer = 'animeheaven';
         updateActiveServerButton();
         
-        document.getElementById('video-container').innerHTML = '<div class="loading">Loading AnimeHeaven stream...</div>';
+        // Show loading state
+        document.querySelector('.video-loading').style.display = 'flex';
+        document.getElementById('custom-play-btn').style.display = 'none';
+        setButtonLoading('animeheaven-btn', true);
         
         const res = await fetch(`https://txtorg-anih.hf.space/video?name=${encodeURIComponent(animeDetails.title)}&episode=${currentEpisode}`);
         
@@ -364,6 +536,8 @@
         console.error('AnimeHeaven error:', error);
         showError('server-error', 'Failed to load AnimeHeaven stream. Trying GogoAnime as fallback...');
         await loadGogoAnime(); // Fallback to GogoAnime
+      } finally {
+        setButtonLoading('animeheaven-btn', false);
       }
     }
     
@@ -373,7 +547,10 @@
         currentServer = 'gogoanime';
         updateActiveServerButton();
         
-        document.getElementById('video-container').innerHTML = '<div class="loading">Loading GogoAnime stream...</div>';
+        // Show loading state
+        document.querySelector('.video-loading').style.display = 'flex';
+        document.getElementById('custom-play-btn').style.display = 'none';
+        setButtonLoading('gogoanime-btn', true);
         
         // Step 1: Get episode URL
         const res1 = await fetch(`https://reikerxx-animedl.hf.space/anime/${encodeURIComponent(animeDetails.title)}/${currentEpisode}`);
@@ -407,7 +584,10 @@
       } catch (error) {
         console.error('GogoAnime error:', error);
         showError('server-error', 'Failed to load GogoAnime stream. Please try again later.');
-        document.getElementById('video-container').innerHTML = '<div class="error-message">Failed to load video. Please try another server.</div>';
+        document.querySelector('.video-loading').style.display = 'flex';
+        document.getElementById('custom-play-btn').style.display = 'none';
+      } finally {
+        setButtonLoading('gogoanime-btn', false);
       }
     }
     
@@ -425,7 +605,10 @@
     
     // Download from AnimeHeaven
     async function downloadFromHeaven() {
+      const btn = event.target.closest('.btn');
       try {
+        btn.classList.add('loading');
+        
         const res = await fetch(`https://txtorg-anih.hf.space/video?name=${encodeURIComponent(animeDetails.title)}&episode=${currentEpisode}`);
         
         if (!res.ok) throw new Error('API request failed');
@@ -446,12 +629,16 @@
       } catch (error) {
         console.error('Download error:', error);
         showError('download-error', 'Failed to prepare download. Please try again.');
+      } finally {
+        btn.classList.remove('loading');
       }
     }
     
     // Download from TokyoInsider
     async function downloadFromTokyo() {
+      const btn = event.target.closest('.btn');
       try {
+        btn.classList.add('loading');
         document.getElementById('quality-selector').style.display = 'none';
         document.getElementById('download-error').textContent = '';
         
@@ -495,12 +682,16 @@
       } catch (error) {
         console.error('TokyoInsider error:', error);
         showError('download-error', 'No download options available from TokyoInsider for this episode.');
+      } finally {
+        btn.classList.remove('loading');
       }
     }
     
     // Download from 9anime
     async function downloadFrom9anime() {
+      const btn = event.target.closest('.btn');
       try {
+        btn.classList.add('loading');
         document.getElementById('quality-selector').style.display = 'none';
         document.getElementById('download-error').textContent = '';
         
@@ -532,19 +723,28 @@
       } catch (error) {
         console.error('9anime error:', error);
         showError('download-error', 'No download options available from 9anime for this episode.');
+      } finally {
+        btn.classList.remove('loading');
       }
     }
     
     // Start download after quality selection
     function startDownload() {
-      const quality = document.getElementById('quality-select').value;
+      const btn = event.target.closest('.btn');
+      btn.classList.add('loading');
       
-      if (!quality || !downloadOptions[quality]) {
-        showError('download-error', 'Please select a quality option');
-        return;
-      }
-      
-      window.open(downloadOptions[quality], '_blank');
+      setTimeout(() => {
+        const quality = document.getElementById('quality-select').value;
+        
+        if (!quality || !downloadOptions[quality]) {
+          showError('download-error', 'Please select a quality option');
+          btn.classList.remove('loading');
+          return;
+        }
+        
+        window.open(downloadOptions[quality], '_blank');
+        btn.classList.remove('loading');
+      }, 500);
     }
     
     // Render episode list with pagination
@@ -589,6 +789,16 @@
         renderEpisodeList();
       }
     }
+    
+    // Custom play button functionality
+    document.getElementById('custom-play-btn').addEventListener('click', function() {
+      this.style.display = 'none';
+      if (currentServer === 'animeheaven') {
+        loadAnimeHeaven();
+      } else {
+        loadGogoAnime();
+      }
+    });
   </script>
 </body>
 </html>
